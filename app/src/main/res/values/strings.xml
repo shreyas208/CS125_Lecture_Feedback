@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">CS 125 Lecture Feedback</string>
+    <string name="title_activity_submit">CS 125 Lecture Feedback</string>
+    <string name="title_activity_history">History</string>
+    <string name="title_activity_about">About</string>
+
+    <string name="action_history_clear">Clear</string>
+
+    <string name="submit_et_hint_userNetID">Your NetID</string>
+    <string name="submit_et_hint_partnerNetID">Partner NetID</string>
+    <string name="submit_tv_ratingLabel">Rating</string>
+    <string name="submit_et_hint_feedbackGood">Topic(s) from today I feel good about (optional)</string>
+    <string name="submit_et_hint_feedbackStruggling">Topic(s) from today I am struggling with (optional)</string>
+    <string name="submit_btn_submit">Submit</string>
+
+    <string name="submit_toast_userNetID_blank">NetID must be entered</string>
+    <string name="submit_toast_partnerNetID_blank">Partner NetID must be entered</string>
+    <string name="submit_toast_netID_invalid">NetIDs must only contain a&#8211;z, 0&#8211;9, &#8211;</string>
+
+    <string name="about_byShreyasPatil">by &lt;b&gt;Shreyas Patil&lt;/b&gt;</string>
+    <string name="about_emailAddress">s@shreyas208.com</string>
+    <string name="about_forCS125">for &lt;b&gt;CS125: Intro to Computer Science&lt;/b&gt;</string>
+    <string name="about_atUIUC">at the &lt;b&gt;University of Illinois at Urbana-Champaign&lt;/b&gt;</string>
+    <string name="about_version">Version 0.1</string>
+
+    <string name="shared_pref_key_netid">shared_pref_netid</string>
+</resources>
