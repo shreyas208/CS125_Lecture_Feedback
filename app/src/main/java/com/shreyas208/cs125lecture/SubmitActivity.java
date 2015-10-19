@@ -1,14 +1,11 @@
 package com.shreyas208.cs125lecture;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.os.AsyncTask;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,9 +17,14 @@ import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
+import com.squareup.okhttp.Callback;
+import com.squareup.okhttp.FormEncodingBuilder;
+import com.squareup.okhttp.OkHttpClient;
+import com.squareup.okhttp.Request;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.Response;
+
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 public class SubmitActivity extends AppCompatActivity {
@@ -34,6 +36,8 @@ public class SubmitActivity extends AppCompatActivity {
     private EditText etFeedbackStruggling;
     private EditText etFeedbackGood;
     private Button btnSubmit;
+
+    private final OkHttpClient client = new OkHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +81,8 @@ public class SubmitActivity extends AppCompatActivity {
         // Retrieve saved NetID
         etUserNetID.setText(getPreferences(Context.MODE_PRIVATE).getString(getString(R.string.shared_pref_key_netid),""));
 
+        btnSubmit.setEnabled(true);
+
     }
 
     private void updateRatingText() {
@@ -84,6 +90,8 @@ public class SubmitActivity extends AppCompatActivity {
     }
 
     public void processSubmission(View v) {
+        btnSubmit.setEnabled(false);
+
         // Retrieve input values
         String userNetID = etUserNetID.getText().toString().trim().toLowerCase();
         String partnerNetID = etPartnerNetID.getText().toString().trim().toLowerCase();
@@ -93,53 +101,100 @@ public class SubmitActivity extends AppCompatActivity {
 
         // Validate NetIDs
         if (userNetID.isEmpty()) {
-            Toast.makeText(this, getString(R.string.submit_toast_userNetID_blank), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.submit_toast_userNetID_blank), Toast.LENGTH_SHORT).show();
+            btnSubmit.setEnabled(true);
             return;
         }
         if (partnerNetID.isEmpty()) {
-            Toast.makeText(this, getString(R.string.submit_toast_partnerNetID_blank), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.submit_toast_partnerNetID_blank), Toast.LENGTH_SHORT).show();
+            btnSubmit.setEnabled(true);
             return;
         }
-        if (!(Pattern.matches("[A-Z,a-z,0-9,-]+",userNetID) && Pattern.matches("[A-Z,a-z,0-9,-]+",partnerNetID))) {
-            Toast.makeText(this, getString(R.string.submit_toast_netID_invalid), Toast.LENGTH_LONG).show();
+        if (!(Pattern.matches("[A-Za-z0-9-]+",userNetID) && Pattern.matches("[A-Za-z0-9-]+",partnerNetID))) {
+            Toast.makeText(getApplicationContext(), getString(R.string.submit_toast_netID_invalid), Toast.LENGTH_LONG).show();
+            btnSubmit.setEnabled(true);
             return;
         }
 
         // Save user's NetID
         getPreferences(Context.MODE_PRIVATE).edit().putString(getString(R.string.shared_pref_key_netid),userNetID).commit();
 
-        String[] submissionData = new String[] {userNetID, partnerNetID, String.valueOf(rating), feedbackGood, feedbackStruggling};
-
-        // submit to server
-
-        // check success
-
-        // if successful
-        {
-            // add submission to local database
-            SubmissionDbHelper submissionDbHelper = new SubmissionDbHelper(SubmitActivity.this);
-            submissionDbHelper.addSubmission(submissionData[0], submissionData[1], Integer.parseInt(submissionData[2]), submissionData[3], submissionData[4]);
-
-            startActivity(new Intent(SubmitActivity.this, HistoryActivity.class));
+        try {
+            new PostForm().run(userNetID, partnerNetID, rating, feedbackGood, feedbackStruggling);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Log.e("CS 125", e.getMessage());
+            btnSubmit.setEnabled(true);
+            Toast.makeText(getApplicationContext(), getString(R.string.submit_toast_server_error), Toast.LENGTH_LONG).show();
         }
+    }
 
+    public class PostForm {
 
+        //public static final String HTTP_POST_URL = "http://shreyas208.com/CS125LectureFeedback/submit.php";
+        public static final String HTTP_POST_URL = "http://cs125class.web.engr.illinois.edu/processfeedback.php";
 
+        private final OkHttpClient client = new OkHttpClient();
 
+        public void run(final String userNetID, final String partnerNetID, final int rating, final String feedbackGood, final String feedbackStruggling) {
+            final RequestBody formBody = new FormEncodingBuilder()
+                    .add("yournetid", userNetID)
+                    .add("theirnetid", partnerNetID)
+                    .add("lecturerating", String.valueOf(rating))
+                    .add("understand", feedbackGood)
+                    .add("struggle", feedbackStruggling)
+                    .build();
+            Request request = new Request.Builder()
+                    .url(HTTP_POST_URL)
+                    .post(formBody)
+                    .build();
+
+            client.newCall(request).enqueue(new Callback() {
+                @Override
+                public void onFailure(Request request, IOException e) {
+                    e.printStackTrace();
+                    Log.e("CS 125", e.getMessage());
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            btnSubmit.setEnabled(true);
+                            Toast.makeText(getApplicationContext(), getString(R.string.submit_toast_network_error), Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+                @Override
+                public void onResponse(Response response) throws IOException {
+                    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
+
+                    SubmissionDbHelper submissionDbHelper = new SubmissionDbHelper(SubmitActivity.this);
+                    submissionDbHelper.addSubmission(userNetID, partnerNetID, rating, feedbackGood, feedbackStruggling);
+
+                    new Handler(Looper.getMainLooper()).post(new Runnable() {
+                        @Override
+                        public void run() {
+                            btnSubmit.setEnabled(true);
+                            etPartnerNetID.setText("");
+                            etFeedbackGood.setText("");
+                            etFeedbackStruggling.setText("");
+                            sbRating.setProgress(5);
+                            updateRatingText();
+                        }
+                    });
+
+                    startActivity(new Intent(SubmitActivity.this, HistoryActivity.class));
+                }
+            });
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_submit, menu);
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement

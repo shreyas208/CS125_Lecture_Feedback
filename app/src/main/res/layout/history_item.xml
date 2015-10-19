@@ -5,7 +5,7 @@
     android:padding="2dp">
     <LinearLayout
         android:layout_width="0dp"
-        android:layout_weight="88"
+        android:layout_weight="85"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dp"
         android:layout_marginBottom="5dp"
@@ -23,13 +23,6 @@
                 android:textSize="@dimen/history_item_text_size_netid"
                 android:textStyle="bold"
                 android:id="@+id/history_item_tvUserNetID"/>
-            <!--<TextView
-                android:layout_width="0dp"
-                android:layout_weight="14"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:textSize="@dimen/history_item_text_size"
-                android:text="and"/>-->
             <TextView
                 android:layout_width="0dp"
                 android:layout_weight="43"
@@ -42,7 +35,7 @@
         <TextView
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:gravity="left"
+            android:gravity="center"
             android:textSize="@dimen/history_item_text_size_timestamp"
             android:id="@+id/history_item_tvTimestamp"/>
     </LinearLayout>
@@ -50,7 +43,11 @@
         android:layout_width="0dp"
         android:layout_weight="12"
         android:layout_height="fill_parent"
-        android:gravity="right"
+        android:gravity="right|center_vertical"
         android:textSize="35sp"
         android:id="@+id/history_item_tvLectureRating"/>
+    <Space
+        android:layout_width="0dp"
+        android:layout_weight="3"
+        android:layout_height="wrap_content" />
 </LinearLayout>

@@ -6,14 +6,9 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import java.sql.Timestamp;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
-/**
- * Created by shreyas on 15-09-26.
- */
 public class SubmissionDbHelper extends SQLiteOpenHelper {
 
     public static final int DATABASE_VERSION = 3; // increment to trigger DB rebuild on install
@@ -73,35 +68,10 @@ public class SubmissionDbHelper extends SQLiteOpenHelper {
     }
 
     public Cursor fetchAllSubmissions() {
-        //Cursor mCursor = this.getReadableDatabase().query(TABLE_NAME, new String[] {COLUMN_NAME_TIMESTAMP, COLUMN_NAME_USER_NETID, COLUMN_NAME_PARTNER_NETID, COLUMN_NAME_LECTURE_RATING}, null, null,  null, null, null);
         Cursor mCursor = this.getReadableDatabase().rawQuery("SELECT rowid _id,* FROM " + TABLE_NAME + " ORDER BY " + COLUMN_NAME_SERIAL + " DESC", null);
         if (mCursor != null) {
             mCursor.moveToFirst();
         }
         return mCursor;
     }
-
-    /*public ArrayList<Submission> getAllSubmissions() {
-        SQLiteDatabase db = this.getWritableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_NAME, null);
-
-        ArrayList<Submission> submissions = new ArrayList<Submission>();
-
-        if (cursor.moveToFirst()) {
-            do {
-                Submission submission = new Submission();
-
-                submission.setTimestamp(Timestamp.valueOf(cursor.getString(cursor.getColumnIndex(COLUMN_NAME_TIMESTAMP))));
-                submission.setUserNetID(cursor.getString(cursor.getColumnIndex(COLUMN_NAME_USER_NETID)));
-                submission.setPartnerNetID(cursor.getString(cursor.getColumnIndex(COLUMN_NAME_PARTNER_NETID)));
-                submission.setLectureRating(cursor.getInt(cursor.getColumnIndex(COLUMN_NAME_LECTURE_RATING)));
-                submission.setFeedbackGood(cursor.getString(cursor.getColumnIndex(COLUMN_NAME_FEEDBACK_GOOD)));
-                submission.setFeedbackStruggling(cursor.getString(cursor.getColumnIndex(COLUMN_NAME_FEEDBACK_STRUGGLING)));
-
-                submissions.add(submission);
-            } while (cursor.moveToNext());
-        }
-
-        return submissions;
-    }*/
 }
