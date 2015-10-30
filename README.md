@@ -1,6 +1,6 @@
 # CS 125 Lecture Feedback
 
-Android app for submitting lecture feedback for **CS 125** Intro to Computer Science at the **University of Illinois at Urbana-Champaign** (UIUC).
+Android app for submitting lecture feedback for **CS 125** (Intro to Computer Science) at the **University of Illinois at Urbana-Champaign** (UIUC).
 
 Available on the **[Google Play Store](https://play.google.com/store/apps/details?id=com.shreyas208.cs125lecture)**.
 
